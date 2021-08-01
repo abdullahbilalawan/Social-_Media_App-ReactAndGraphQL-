@@ -5,7 +5,8 @@ module.exports = {
 	Query: {
 		async getPosts() {
 			try {
-				const posts = await Post.find().sort({createdAt: -1});
+				const posts = await Post.find().sort({ createdAt: -1 });
+				return posts;
 			} catch (err) {
 				throw new Error(err);
 			}
@@ -25,64 +26,54 @@ module.exports = {
 		},
 	},
 	Mutation: {
-		async createPost(_, { body}, context) {
+		async createPost(_, { body }, context) {
 			const user = checkAuth(context);
-            const newPost = new Post({
-                body,
-                user: user.id,
-                username: user.username,
-                createdAt: new Date().toISOString(),
+			const newPost = new Post({
+				body,
+				user: user.id,
+				username: user.username,
+				createdAt: new Date().toISOString(),
+			});
 
-
-            });
-
-            const post = await newPost.save();
-
-
+			const post = await newPost.save();
 		},
 
-        async deletePost(_, {postId}, context) {
-            const user = checkAuth(context);
-            try{
-                const post = await Post.findById(postId);
-                if(user.username === post.username){
-                    post.delete();
-                    return 'Post deleted successfully'
-                }
-
-            }
-            catch(err){
-                throw new Error(err);
-            }
-
-
-        },
-		async likePost(_, {postId}, context){
-			const {username} = checkAuth(context);
-			const post = await Post.findById(postId);
-			if(post){
-				if(post.likes.find(like => like.username === username)){
-					//Post already liked
-					post.likes = post.likes.filter(like => like.username !== username);
-            
+		async deletePost(_, { postId }, context) {
+			const user = checkAuth(context);
+			try {
+				const post = await Post.findById(postId);
+				if (user.username === post.username) {
+					post.delete();
+					return 'Post deleted successfully';
 				}
-				else{
+			} catch (err) {
+				throw new Error(err);
+			}
+		},
+		async likePost(_, { postId }, context) {
+			const { username } = checkAuth(context);
+			const post = await Post.findById(postId);
+			if (post) {
+				if (
+					post.likes.find(
+						(like) => like.username === username
+					)
+				) {
+					//Post already liked
+					post.likes = post.likes.filter(
+						(like) => like.username !== username
+					);
+				} else {
 					post.likes.push({
 						username,
 						createdAt: new Date().toISOString(),
-
-
-					})
-
+					});
 				}
 				await post.save();
 				return post;
-			}
-			else{
+			} else {
 				throw new Error(' Post not found');
 			}
-		}
-
-    
-	}
+		},
+	},
 };

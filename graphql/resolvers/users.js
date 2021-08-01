@@ -11,11 +11,11 @@ const {
 function generateToken(user) {
     return jwt.sign(
         {
-            id: res.id,
-            email: res.email,
-            username: res.username,
+            id: user.id,
+            email: user.email,
+            username: user.username,
         },
-        'SECRET',
+        'SEC',
         { expiresIn: '1h' }
     );
 }
